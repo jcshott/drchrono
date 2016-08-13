@@ -5,3 +5,4 @@ env/
 *.db
 migrations/
 settings.py
+*.sqlite3
