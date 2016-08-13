@@ -1,0 +1,17 @@
+{% extends "bdayreminder/base.html" %}
+
+{% block content %}
+
+<form action="{% url 'bdayreminder:send_emails' %}" method="post">
+{% csrf_token %}
+{% for person in patients %}
+{{ person.email }}
+{% if person.email %}
+    <input type="checkbox" name="patient" value={{ person.id }} />
+    <label>{{ person.first_name }} {{ person.last_name }}: Birthday {{ person.date_of_birth }} </label><br />
+{% endif %}
+{% endfor %}
+<input type="submit" value="Submit" />
+</form>
+
+{% endblock %}
