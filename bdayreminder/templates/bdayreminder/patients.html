@@ -14,11 +14,11 @@
 <h2> Send Texts </h2>
 
 {% csrf_token %}
-    <div id='texts'>
+    <div>
 
     {% for person in patients.text %}
 
-        <input type="checkbox" name="patient" value='({{ person.cell }}, {person.name })' />
+        <input type="checkbox" name="patient" class="texts" value='({{ person.cell }}, {{ person.name }})' />
         <label>{{ person.name }}: Birthday {{ person.dob }} </label><br />
 
     {% endfor %}
@@ -78,57 +78,52 @@ $("#contact_form").on("submit", function (evt) {
     evt.preventDefault();
     console.log('ajax');
     // list of ids for texts to send
+    // var texts = ["(555-555-5555, corey shott)"];
     var texts = [];
-    $('#texts input:checked').each(function() {
+
+    $('.texts:checked').each(function() {
         texts.push($(this).attr('value'));
     });
     // console.log(texts);
-    // if (texts.length > 1) {
-    //     $.post('/bdayreminder/send_texts', texts, function (result) {
-    //         console.log('texts_sent');
-    //     });
-    //
-    // };
+    if (texts.length > 0) {
+        var postdata={
+          'textsSend': texts,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }
 
-    var emailSend = ["(jcshott@gmail.com, corey shott)"];
+        $.post('/send_texts', postdata, function (result) {
+            console.log(result);
+        });
+
+    };
+
+
+    // var emailSend = ["(jcshott@gmail.com, corey shott)"];
+    var emailSend = [];
+
     $('.emails:checked').each(function() {
         emailSend.push($(this).attr('value'));
     });
 
     if (emailSend.length > 0) {
-    //     $.ajax({
-    //     url: '/send_emails',
-    //     type: 'post',
-    //     data: {
-    //         {"emails": emails}
-    //     },
-    //     headers: {
-    //         Header_Name_One: 'Header Value One',   //If your header name has spaces or any other char not appropriate
-    //         "Header Name Two": 'Header Value Two'  //for object property name, use quoted notation shown in second
-    //     },
-    //     dataType: 'json',
-    //     success: function (data) {
-    //         console.info(data);
-    //     }
-    // });
-        send_mail_req(emailSend);
+
+        var postdata={
+          'emailsSend': emailSend,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        }
+
+        $.post('/send_emails', postdata, function (result) {
+            $('body').html(result);
+            console.log("emails sent");
+        });
+    }
+
+    if (emailSend.length === 0  && texts.length === 0){
+        console.log("please select");
     }
 
 });
 
-function send_mail_req(array){
-    var postdata={
-      'emailsSend': ['(jcshott@gmail.com, corey shott)', '(michael@drchrono.com, John Departee)'],
-      'csrfmiddlewaretoken': '{{ csrf_token }}'
-    }
-    console.log(postdata);
-    console.log(array);
-
-    $.post('/send_emails', postdata, function (result) {
-        $('body').html(result);
-        console.log("emails sent");
-    });
-}
 
 </script>
 

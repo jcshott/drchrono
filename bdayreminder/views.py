@@ -69,10 +69,8 @@ def send_emails(request):
     sends emails to selected patients
     """
     if request.method == "POST":
-        print request.POST
         to_send_info = request.POST.getlist('emailsSend[]')
         # this is list of string tuples [(email, fullname)]
-        print type(to_send_info)
 
     messages_sent = []
 
@@ -99,7 +97,25 @@ def send_texts(request):
     """ takes in list of cell numbers and sends "happy birthday" text.
     not working right now, would likely use Twilio API for this
     """
-    pass
+    if request.method == "POST":
+        text_to_send_info = request.POST.getlist('textsSend[]')
+        print text_to_send_info
+
+    text_messages_sent = []
+
+    for item in text_to_send_info:
+        item = str(item)
+
+        info = item.split(',')
+        name = info[1].strip(")").strip()
+        cell = info[0].strip("(").strip()
+        print "name", name
+        print "cell", cell
+        text_messages_sent.append((name, cell))
+
+    print "texts that would be sent", text_messages_sent
+
+    return HttpResponse("worked")
 
 
 def revoke(request):
