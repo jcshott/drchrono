@@ -2,16 +2,135 @@
 
 {% block content %}
 
-<form action="{% url 'bdayreminder:send_emails' %}" method="post">
+<form action="" method="post" id="contact_form" class="form-group">
+
+{% if not patients %}
+<h1> No Birthdays Today! Check back tomorrow! </h1>
+
+{% else %}
+
+{% if patients.text %}
+
+<h2> Send Texts </h2>
+
 {% csrf_token %}
-{% for person in patients %}
-{{ person.email }}
-{% if person.email %}
-    <input type="checkbox" name="patient" value={{ person.id }} />
-    <label>{{ person.first_name }} {{ person.last_name }}: Birthday {{ person.date_of_birth }} </label><br />
-{% endif %}
+    <div id='texts'>
+
+    {% for person in patients.text %}
+
+        <input type="checkbox" name="patient" value='({{ person.cell }}, {person.name })' />
+        <label>{{ person.name }}: Birthday {{ person.dob }} </label><br />
+
+    {% endfor %}
+    {% endif %}
+    </div>
+
+{% if patients.email %}
+
+<h2> Send emails </h2>
+
+<!-- <form action="{% url 'bdayreminder:send_emails' %}" method="post"> -->
+<!-- {% csrf_token %} -->
+    <div id="none">
+    {% for person in patients.email %}
+
+        <input type="checkbox" class="emails" name="patient_email" value='({{ person.email }}, {{person.name}})'/>
+        <label>{{ person.name }} : Birthday {{ person.dob }} </label><br />
+
+    {% endfor %}
+    {% endif %}
+
+    </div>
+
+{% if patients.home_call %}
+
+<h2> Call Patients on Home Phone </h2>
+
+{% for person in patients.text %}
+
+    <label>{{ person.name }}: Birthday {{ person.dob }} </label><br />
+
 {% endfor %}
-<input type="submit" value="Submit" />
+{% endif %}
+
+{% if patients.no_contact %}
+
+<h2> Patients with No Contact Info on File </h2>
+
+{% for person in patients.no_contact %}
+
+
+    <label>{{ person.name }}: Birthday {{ person.dob }} </label><br />
+
+{% endfor %}
+{% endif %}
+
+{% endif %}
+
+<input type="submit" value="Submit"/>
 </form>
+
+
+<script>
+
+$("#contact_form").on("submit", function (evt) {
+    // send emails and texts to correct routes via ajax
+    evt.preventDefault();
+    console.log('ajax');
+    // list of ids for texts to send
+    var texts = [];
+    $('#texts input:checked').each(function() {
+        texts.push($(this).attr('value'));
+    });
+    // console.log(texts);
+    // if (texts.length > 1) {
+    //     $.post('/bdayreminder/send_texts', texts, function (result) {
+    //         console.log('texts_sent');
+    //     });
+    //
+    // };
+
+    var emailSend = ["(jcshott@gmail.com, corey shott)"];
+    $('.emails:checked').each(function() {
+        emailSend.push($(this).attr('value'));
+    });
+
+    if (emailSend.length > 0) {
+    //     $.ajax({
+    //     url: '/send_emails',
+    //     type: 'post',
+    //     data: {
+    //         {"emails": emails}
+    //     },
+    //     headers: {
+    //         Header_Name_One: 'Header Value One',   //If your header name has spaces or any other char not appropriate
+    //         "Header Name Two": 'Header Value Two'  //for object property name, use quoted notation shown in second
+    //     },
+    //     dataType: 'json',
+    //     success: function (data) {
+    //         console.info(data);
+    //     }
+    // });
+        send_mail_req(emailSend);
+    }
+
+});
+
+function send_mail_req(array){
+    var postdata={
+      'emailsSend': ['(jcshott@gmail.com, corey shott)', '(michael@drchrono.com, John Departee)'],
+      'csrfmiddlewaretoken': '{{ csrf_token }}'
+    }
+    console.log(postdata);
+    console.log(array);
+
+    $.post('/send_emails', postdata, function (result) {
+        $('body').html(result);
+        console.log("emails sent");
+    });
+}
+
+</script>
+
 
 {% endblock %}

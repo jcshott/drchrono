@@ -1,0 +1,13 @@
+{% extends "bdayreminder/base.html" %}
+
+{% block content %}
+<div> <h1 class="lead"> Congrats! </h1></div>
+
+<h3> Messages sent to: </h3>
+<ul class="list-group">
+    {% for item in sent %}
+     <li class="list-group-item">{{ item }}</li>
+ {% endfor %}
+
+</ul>
+{% endblock %}

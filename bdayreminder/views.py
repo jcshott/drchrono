@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.utils import timezone
-from django.core.mail import send_mail
+from django.core.mail import send_mail, send_mass_mail
 
 
 import api, utils
@@ -10,30 +10,26 @@ from models import Doctor
 
 
 def index(request):
-    # show either the authorize app page or doc's page
+    # show either the login/authorize app page or doc's page
     user = request.session.get("user", None)
     if user:
         return redirect("/patients")
 
     else:
-        params = {"redirect": "http%3A//127.0.0.1%3A8000/api_auth",
+        params = {"redirect": "http%3A//127.0.0.1%3A8000/login",
                 "client_id": os.environ["DRCHRONO_CLIENT_ID"]}
 
         return render(request, "bdayreminder/index.html", params)
 
-def api_auth(request):
+
+def login(request):
     # redirect with the authorization codes from drchrono
     #TODO: error handling if not authorized
 
     code = request.GET.get("code", "")
-    tokens = api.get_tokens(code)
 
-    # Save info in database associated with doctor
-    doc = Doctor(access_token = tokens['access_token'],
-    refresh_token = tokens['refresh_token'],
-    expiration = timezone.now() + datetime.timedelta(seconds=tokens['expires_in']))
-
-    doc.save()
+    # get doctor object - either new or existing
+    doc = utils.log_in_user(code)
     request.session['user'] = doc.id
     # redirect
     return redirect("/patients")
@@ -42,31 +38,68 @@ def patients(request):
     # get data for bday messages
     user_id = request.session['user']
 
-    # birthdays_today = utils.patients_with_bdays(user_id)
+    birthdays_today = utils.patients_with_bdays(user_id)
+    # returns list of dicts {'name': name, 'dob': date_birth, 'email': email, 'cell': cell, 'home_phone': home_phone}
+    # fake = api.get_patients(Doctor.objects.get(pk=user_id))
+    text_patients = []
+    email_patients = []
+    call_patients = []
+    contact_info_needed = []
+    # print "birthdays_today", birthdays_today
+    # if not birthdays_today:
+    #     return render(request, "bdayreminder/patients.html", patients)
 
-    fake = api.get_patients(Doctor.objects.get(pk=user_id))
-    # return HttpResponse(birthdays_today)
+    for patient in birthdays_today:
+        if patient['cell']:
+            text_patients.append(patient)
+        elif patient['email']:
+            email_patients.append(patient)
+        elif patient['home_phone']:
+            call_patients.append(patient)
+        else:
+            contact_info_needed.append(patient)
+
+    patients = {'patients': {"text": text_patients, "email": email_patients, "home_call": call_patients, "no_contact": contact_info_needed}}
+
     # return render(request, "bdayreminder/patients.html", {"patients": birthdays_today})
-    return render(request, "bdayreminder/patients.html", {"patients": fake})
+    return render(request, "bdayreminder/patients.html", patients)
 
 def send_emails(request):
     """
-    For example, the following code would send two different messages to two different sets of recipients; however, only one connection to the mail server would be opened.
-
-    message1 = ('Subject here', 'Here is the message', 'from@example.com', ['first@example.com', 'other@example.com'])
-    message2 = ('Another Subject', 'Here is another message', 'from@example.com', ['second@test.com'])
-    send_mass_mail((message1, message2), fail_silently=False)
-    The return value will be the number of successfully delivered messages.
+    sends emails to selected patients
     """
     if request.method == "POST":
-        to_send = request.POST.getlist('patient')
-    # this gets a list of patient IDs
-    # TODO: get emails associated and send birthday email
+        print request.POST
+        to_send_info = request.POST.getlist('emailsSend[]')
+        # this is list of string tuples [(email, fullname)]
+        print type(to_send_info)
 
-    # datatuple is a tuple in which each element is in this format:
-    # (subject, message, from_email, recipient_list)
-    return HttpResponse(to_send)
-    # send_mass_mail(datatuple, fail_silently=False)
+    messages_sent = []
+
+    for item in to_send_info:
+        item = str(item)
+
+        info = item.split(',')
+        name = info[1].strip(")").strip()
+        email = info[0].strip("(").strip()
+        messages_sent.append((name, email))
+
+    print "emails that would be sent", messages_sent
+
+    sent_names = []
+    for item in messages_sent:
+        sent_names.append(item[0])
+
+    context = {"sent": sent_names}
+
+    return render(request, 'bdayreminder/success.html', context)
+
+
+def send_texts(request):
+    """ takes in list of cell numbers and sends "happy birthday" text.
+    not working right now, would likely use Twilio API for this
+    """
+    pass
 
 
 def revoke(request):
