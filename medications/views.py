@@ -8,19 +8,20 @@ from django.core.mail import send_mail
 import api
 import os, datetime, requests, json
 from models import Doctor
+from forms import RefillForm
 
 # Create your views here.
 def index(request):
-    # user = request.session.get("user", None)
-    # print user
-    # if user:
-    #     return redirect("medications/patients")
-    #
-    # else:
-    params = {"redirect": "http%3A//127.0.0.1%3A8000/medications/authorize",
-            "client_id": os.environ["DRCHRONO_MEDS_CLIENT_ID"]}
+    user = request.session.get("user", None)
+    print user
+    if user:
+        return redirect("patients/")
 
-    return render(request, "medications/index.html", params)
+    else:
+        params = {"redirect": "http%3A//127.0.0.1%3A8000/medications/authorize",
+                "client_id": os.environ["DRCHRONO_MEDS_CLIENT_ID"]}
+
+        return render(request, "medications/index.html", params)
 
 
 def authorize(request):
@@ -32,13 +33,13 @@ def authorize(request):
 
     # TODO: notify user that they need to authorize.
     if not code:
-        return redirect("/medications")
+        return redirect("medications/")
 
     # get doctor id
     doc_id = api.get_tokens(code)
     request.session['user'] = doc_id
     # redirect to patient listing page
-    return redirect("/medications/patients")
+    return redirect("patients/")
 
 
 def patients(request):
@@ -51,5 +52,11 @@ def patients(request):
 
     return render(request, "medications/patients.html", {'patients': patients})
 
-def patient_detail(request, patient_id):
+def patient_detail(request):
+    """
+    given a patient_id, returns medication information
+    """
+    patient_id = request.GET.get('patientId')
+    # TODO: get patient medication information to list.
+    # TODO: render refill option for each medication. maybe as modal?
     return HttpResponse("here's some details")

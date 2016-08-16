@@ -5,12 +5,39 @@
     <h2> DOC ID: </h2>
 
     <h2> Current Patients for Dr. So-and-So </h2>
-    <ul>
+<div class="card-columns">
         {% for patient in patients %}
+        <div class="card">
+          <div class="card-block">
+            <h4 class="card-title">{{ patient.first_name }} {{ patient.last_name }}</h4>
+            <p class="card-text">Some text about patient </p>
 
-         <li class="list-group-item">{{ patient.first_name }} {{ patient.last_name }} </li>
+            <button class="btn btn-primary medButton" type="button" data-toggle="collapse" data-target="#medicationInfo{{ patient.id}}" aria-expanded="false" aria-controls="collapseExample">
+              Medication info for this patient
+            </button>
 
-    {% endfor %}
+            <div class="collapse" id="medicationInfo{{ patient.id }}">
+                <div class="card card-block">
+                Here we'll show the medication form.
+                </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+  <!-- </div> -->
+</div>
 
 </div>
+
+<script>
+$('.medButton').on('click', function () {
+    var patientId = $('.collapse').attr('id').substring(14);
+    console.log(patientId);
+    
+  $.get('/medications/patient_detail/', {'patient_id': patientId}, function(result) {
+      console.log(result);
+  })
+})
+
+</script>
 {% endblock %}
