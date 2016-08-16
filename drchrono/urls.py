@@ -17,7 +17,8 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'', include('bdayreminder.urls')),
+    url(r'^bdayreminder', include('bdayreminder.urls')),
+    url(r'^medications', include('medications.urls')),
     url(r'^testapi/', include('bdayreminder.urls')),
     url(r'^admin/', admin.site.urls),
 ]

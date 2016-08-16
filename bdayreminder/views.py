@@ -16,7 +16,7 @@ def index(request):
         return redirect("/patients")
 
     else:
-        params = {"redirect": "http%3A//127.0.0.1%3A8000/login",
+        params = {"redirect": "http%3A//127.0.0.1%3A8000/bdayreminder/login",
                 "client_id": os.environ["DRCHRONO_CLIENT_ID"]}
 
         return render(request, "bdayreminder/index.html", params)
