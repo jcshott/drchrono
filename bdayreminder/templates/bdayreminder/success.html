@@ -5,9 +5,16 @@
 
 <h3> Messages sent to: </h3>
 <ul class="list-group">
-    {% for item in sent %}
-     <li class="list-group-item">{{ item }}</li>
- {% endfor %}
+    {% for item in messages_sent.emails %}
+
+     <li class="list-group-item">{{ item }} (via email)</li>
+
+{% endfor %}
+    {% for item in messages_sent.texts %}
+
+     <li class="list-group-item">{{ item }} (via text)</li>
+
+    {% endfor %}
 
 </ul>
 {% endblock %}

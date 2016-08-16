@@ -2,13 +2,14 @@
 
 {% block content %}
 
-<form action="" method="post" id="contact_form" class="form-group">
-
 {% if not patients %}
 <h1> No Birthdays Today! Check back tomorrow! </h1>
 
-{% else %}
 
+{% else %}
+<form action="{% url 'bdayreminder:send_messages' %}" method="post" id="contact_form" class="form-group">
+
+{% csrf_token %}
 {% if patients.text %}
 
 <h2> Send Texts </h2>
@@ -18,7 +19,7 @@
 
     {% for person in patients.text %}
 
-        <input type="checkbox" name="patient" class="texts" value='({{ person.cell }}, {{ person.name }})' />
+        <input type="checkbox" name="patient_text" class="texts" value='{{ person.cell }}, {{ person.name }}' />
         <label>{{ person.name }}: Birthday {{ person.dob }} </label><br />
 
     {% endfor %}
@@ -29,12 +30,10 @@
 
 <h2> Send emails </h2>
 
-<!-- <form action="{% url 'bdayreminder:send_emails' %}" method="post"> -->
-<!-- {% csrf_token %} -->
     <div id="none">
     {% for person in patients.email %}
 
-        <input type="checkbox" class="emails" name="patient_email" value='({{ person.email }}, {{person.name}})'/>
+        <input type="checkbox" class="emails" name="patient_email" value='{{ person.email }}, {{ person.name }}'/>
         <label>{{ person.name }} : Birthday {{ person.dob }} </label><br />
 
     {% endfor %}
@@ -65,13 +64,15 @@
 {% endfor %}
 {% endif %}
 
-{% endif %}
-
 <input type="submit" value="Submit"/>
 </form>
 
+{% endif %}
 
-<script>
+
+
+
+<!-- <script>
 
 $("#contact_form").on("submit", function (evt) {
     // send emails and texts to correct routes via ajax
@@ -125,7 +126,7 @@ $("#contact_form").on("submit", function (evt) {
 });
 
 
-</script>
+</script> -->
 
 
 {% endblock %}

@@ -61,61 +61,95 @@ def patients(request):
 
     patients = {'patients': {"text": text_patients, "email": email_patients, "home_call": call_patients, "no_contact": contact_info_needed}}
 
-    # return render(request, "bdayreminder/patients.html", {"patients": birthdays_today})
     return render(request, "bdayreminder/patients.html", patients)
 
-def send_emails(request):
-    """
-    sends emails to selected patients
-    """
+def send_messages(request):
     if request.method == "POST":
-        to_send_info = request.POST.getlist('emailsSend[]')
+        # these are lists of strings ["email, fullname"]
+        texts_to_send = request.POST.getlist("patient_text", [])
+        emails_to_send = request.POST.getlist("patient_email", [])
+        texts = []
+        emails = []
+
+        for item in texts_to_send:
+            info = item.split(",")
+            texts.append(info)
+
+        for item in emails_to_send:
+            info = item.split(",")
+            emails.append(info)
+        print "texts", texts
+        print "emails", emails
+    #### Here I'd use TWILIO to send text and send_mail() to send email ####
+        messages_sent = {"messages_sent": {"texts": texts, "emails": emails}}
+        # print messages_sent
+        # return redirect('/success', messages_sent)
+        return render(request, 'bdayreminder/success.html', messages_sent)
+
+
         # this is list of string tuples [(email, fullname)]
+# def send_emails(request):
+#     """
+#     sends emails to selected patients
+#     """
+#     if request.method == "POST":
+#         to_send_info = request.POST.getlist('emailsSend[]')
+#         # this is list of string tuples [(email, fullname)]
+#
+#     messages_sent = []
+#
+#     for item in to_send_info:
+#         item = str(item)
+#
+#         info = item.split(',')
+#         name = info[1].strip(")").strip()
+#         email = info[0].strip("(").strip()
+#         messages_sent.append((name, email))
+#
+#     # print "emails that would be sent", messages_sent
+#
+#     sent_names = []
+#     for item in messages_sent:
+#         sent_names.append(item[0])
+#
+#     context = {"sent": sent_names}
+#     request.session['emails'] = sent_names
+#     return redirect('/success')
+#
+#     # return render(request, 'bdayreminder/success.html', context)
+#
+#
+# def send_texts(request):
+#     """ takes in list of cell numbers and sends "happy birthday" text.
+#     not working right now, would likely use Twilio API for this
+#     """
+#     if request.method == "POST":
+#         text_to_send_info = request.POST.getlist('textsSend[]')
+#         print text_to_send_info
+#
+#     text_messages_sent = []
+#
+#     for item in text_to_send_info:
+#         item = str(item)
+#
+#         info = item.split(',')
+#         name = info[1].strip(")").strip()
+#         cell = info[0].strip("(").strip()
+#         print "name", name
+#         print "cell", cell
+#         text_messages_sent.append((name, cell))
+#
+#     # print "texts that would be sent", text_messages_sent
+#     request.session['texts'] = text_messages_sent
+#     return redirect('/success')
 
-    messages_sent = []
+def success(request):
+    # sent_names = texts + emails
+    # context = {"sent": sent_names}
+    # texts = request.session.get('texts', [])
+    # emails = request.session.get('emails',[])
 
-    for item in to_send_info:
-        item = str(item)
-
-        info = item.split(',')
-        name = info[1].strip(")").strip()
-        email = info[0].strip("(").strip()
-        messages_sent.append((name, email))
-
-    print "emails that would be sent", messages_sent
-
-    sent_names = []
-    for item in messages_sent:
-        sent_names.append(item[0])
-
-    context = {"sent": sent_names}
-
-    return render(request, 'bdayreminder/success.html', context)
-
-
-def send_texts(request):
-    """ takes in list of cell numbers and sends "happy birthday" text.
-    not working right now, would likely use Twilio API for this
-    """
-    if request.method == "POST":
-        text_to_send_info = request.POST.getlist('textsSend[]')
-        print text_to_send_info
-
-    text_messages_sent = []
-
-    for item in text_to_send_info:
-        item = str(item)
-
-        info = item.split(',')
-        name = info[1].strip(")").strip()
-        cell = info[0].strip("(").strip()
-        print "name", name
-        print "cell", cell
-        text_messages_sent.append((name, cell))
-
-    print "texts that would be sent", text_messages_sent
-
-    return HttpResponse("worked")
+    return render(request, 'bdayreminder/success.html')
 
 
 def revoke(request):
