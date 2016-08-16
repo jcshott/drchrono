@@ -32,7 +32,7 @@ def login(request):
     doc = utils.log_in_user(code)
     request.session['user'] = doc.id
     # redirect
-    return redirect("/patients")
+    return redirect("bdayreminder/patients")
 
 def patients(request):
     # get data for bday messages

@@ -2,6 +2,15 @@
 
 {% block content %}
 <div>
-    <h2> DOC ID: {% doc_id %} </h2>
+    <h2> DOC ID: </h2>
+
+    <h2> Current Patients for Dr. So-and-So </h2>
+    <ul>
+        {% for patient in patients %}
+
+         <li class="list-group-item">{{ patient.first_name }} {{ patient.last_name }} </li>
+
+    {% endfor %}
+
 </div>
 {% endblock %}

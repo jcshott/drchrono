@@ -2,7 +2,7 @@ from django.utils import timezone
 import os, requests, datetime
 
 from models import Doctor
-from utils import save_api_credentials
+import utils
 
 def get_tokens(code):
     """
@@ -20,18 +20,13 @@ def get_tokens(code):
     response.raise_for_status()
     data = response.json()
 
-    if data['error']:
-        # handle user hitting cancel on authorization.
-        pass
-
-    else:
-        # Save info for user
-        user_token_info = {'access_token': data['access_token'],
-        'refresh_token': data['refresh_token'],
-        'expires_timestamp': timezone.now() + datetime.timedelta(seconds=data['expires_in'])
-        }
-        doc_id = utils.save_api_credentials(user_token_info)
-        return doc_id
+    # Save info for user
+    user_token_info = {'access_token': data['access_token'],
+    'refresh_token': data['refresh_token'],
+    'expires_timestamp': timezone.now() + datetime.timedelta(seconds=data['expires_in'])
+    }
+    doc_id = utils.save_api_credentials(user_token_info)
+    return doc_id
 
 
 def refresh_token(user):
@@ -56,5 +51,19 @@ def refresh_token(user):
     refresh_token = data['refresh_token']
     expires_timestamp = datetime.datetime.now(pytz.utc) + datetime.timedelta(seconds=data['expires_in'])
 
-def api_request(type, url):
-    pass
+def get_patients(doc):
+    """
+    general drchrono API request function
+
+    """
+
+    access_token = doc.access_token
+    headers = { 'Authorization': "Bearer " + access_token,}
+
+    patients = []
+    patients_url = 'https://drchrono.com/api/patients_summary'
+    while patients_url:
+        data = requests.get(patients_url, headers=headers).json()
+        patients.extend(data['results'])
+        patients_url = data['next'] # A JSON null on the last page
+    return patients
