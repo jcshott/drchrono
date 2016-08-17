@@ -2,34 +2,75 @@
 
 {% block content %}
 <div>
-    <h2> DOC ID: </h2>
+    <h2> Current Patients </h2>
+    {% for patient in patient_info %}
+    <div class="card-block" style="width: 18rem;">
+        <div class="card">
+        <h4 class="card-title text-xs-center">{{ patient.name }}</h4>
+        <p class="card-text">Some text about patient </p>
 
-    <h2> Current Patients for Dr. So-and-So </h2>
-<!-- <div class="card-columns"> -->
-        {% for patient in patients %}
-        <div class="card-block">
-            <div class="card" style="max-width: 20rem;">
-            <h4 class="card-title">{{ patient.first_name }} {{ patient.last_name }}</h4>
-            <p class="card-text">Some text about patient </p>
+        <button class="btn btn-primary medButton" type="button" data-toggle="collapse" data-target="#medicationInfo{{ patient.id }}" aria-expanded="false" aria-controls="collapseExample">
+          Click for Medication Options
+        </button>
 
-            <button class="btn btn-primary medButton" type="button" data-toggle="collapse" data-target="#medicationInfo{{ patient.id}}" aria-expanded="false" aria-controls="collapseExample">
-              Medication info for this patient
-            </button>
+        <div class="collapse" id="medicationInfo{{ patient.id }}">
+            <div class="card card-block">
+                {% if patient.current_meds %}
+            <ul class="meds">
+                {% for med in patient.current_meds %}
+                <li> Name: {{ med.med_name }}
 
-            <div class="collapse" id="medicationInfo{{ patient.id }}">
-                <div class="card card-block">
-                Here we'll show the medication form.
-                </div>
+                <li class="{{ med.med_id }}"> Refills Remaining <span id="remaining-{{ med.med_id }}"> {{ med.refills }} </span> </li>
+                    {% if med.refills < 2 %}
+                    <button class="renewButton" id="renew-{{ med.med_id }}"> renew options for this Rx </button>
+                    {% endif %}
+
+                    {% if med.refills > 0 %}
+                    <button class="refillButton" id="refill-{{ med.med_id }}"> refill this Rx </button>
+                    {% endif %}
+
+                </li>
+                {% endfor %}
+            <ul>
+                {% else %}
+                <p> No current meds for this patient </p>
+                {% endif %}
             </div>
-          </div>
+        </div>
       </div>
-        {% endfor %}
-  <!-- </div> -->
-</div>
+    </div>
+    {% endfor %}
+
+    </div>
+
+
 
 </div>
 
 <script>
+    $('.refillButton').on('click', function () {
+        console.log($(this).attr('id'));
+        var refill_selected = $(this).attr('id').substring(7);
+        $.post('/medications/process_refill/', {"csrfmiddlewaretoken": "{{ csrf_token }}", "med_id": refill_selected}, function(response){
+            console.log(response);
+            if (response < 2 && $("#remaining-"+refill_selected).text() > 1) {
+                $("."+refill_selected).append(
+                    "<button class='renewButton' id='renew-{{ med.med_id }}'> renew options for this Rx </button>"
+                );
+            }
+            $(this).text('Refilled');
+            $("#remaining-"+refill_selected).text(response);
+            if(response < 1) {
+                $("#refill-"+refill_selected).remove();
+            }
+        })
+    })
+    $('.renewButton').on('click', function () {
+        console.log($(this).attr('id'));
+        renew_selected = $(this).attr('id').substring(6);
+    })
+</script>
+<!-- <script>
 $('.medButton').on('click', function () {
     var patientId = $('.collapse').attr('id').substring(14);
     console.log(patientId);
@@ -39,5 +80,5 @@ $('.medButton').on('click', function () {
   })
 })
 
-</script>
+</script> -->
 {% endblock %}

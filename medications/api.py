@@ -1,7 +1,7 @@
 from django.utils import timezone
 import os, requests, datetime
 
-from models import Doctor
+from models import Doctors, Patients, Medications
 import utils
 
 def get_tokens(code):
@@ -21,13 +21,58 @@ def get_tokens(code):
     data = response.json()
 
     # Save info for user
+    #TODO: get doctor information and save in db
+
     user_token_info = {'access_token': data['access_token'],
     'refresh_token': data['refresh_token'],
     'expires_timestamp': timezone.now() + datetime.timedelta(seconds=data['expires_in'])
     }
-    doc_id = utils.save_api_credentials(user_token_info)
-    return doc_id
+    return user_token_info
 
+# TODO: patient information in db (do in utils module)
+# TODO: medication information in db
+
+def get_doctor_info(token):
+
+    response = requests.get('https://drchrono.com/api/users/current', headers={
+    'Authorization': 'Bearer %s' % token,
+    })
+    response.raise_for_status()
+    data = response.json()
+
+    return data
+
+def get_patients(doc):
+    """
+    get patient information
+    """
+    access_token = doc.access_token
+    headers = { 'Authorization': "Bearer " + access_token,}
+
+    patients = []
+    patients_url = 'https://drchrono.com/api/patients'
+    while patients_url:
+        data = requests.get(patients_url, headers=headers).json()
+        patients.extend(data['results'])
+        patients_url = data['next'] # A JSON null on the last page
+    return patients
+
+def api_get_medications(patient_id, token):
+    """
+    API call to get current medications for given patient.
+
+    Returns list of current medications in drchrono system for the patient
+    """
+
+    headers = { 'Authorization': "Bearer " + token,}
+
+    medications = []
+    medications_url = 'https://drchrono.com/api/medications'
+    while medications_url:
+        data = requests.get(medications_url, headers=headers).json()
+        medications.extend(data['results'])
+        medications_url = data['next'] # A JSON null on the last page
+    return medications
 
 def refresh_token(user):
     """
@@ -50,20 +95,3 @@ def refresh_token(user):
     access_token = data['access_token']
     refresh_token = data['refresh_token']
     expires_timestamp = datetime.datetime.now(pytz.utc) + datetime.timedelta(seconds=data['expires_in'])
-
-def get_patients(doc):
-    """
-    general drchrono API request function
-
-    """
-
-    access_token = doc.access_token
-    headers = { 'Authorization': "Bearer " + access_token,}
-
-    patients = []
-    patients_url = 'https://drchrono.com/api/patients_summary'
-    while patients_url:
-        data = requests.get(patients_url, headers=headers).json()
-        patients.extend(data['results'])
-        patients_url = data['next'] # A JSON null on the last page
-    return patients
