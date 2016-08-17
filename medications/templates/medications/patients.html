@@ -2,9 +2,10 @@
 
 {% block content %}
 <div>
-    <h2> Current Patients </h2>
+    <h2> Current Patients with Prescriptions </h2>
     {% for patient in patient_info %}
-    <div class="card-block" style="width: 18rem;">
+    {% if patient.current_meds %}
+    <div class="card-block" style="width: 22rem;">
         <div class="card">
         <h4 class="card-title text-xs-center">{{ patient.name }}</h4>
         <p class="card-text">Some text about patient </p>
@@ -15,25 +16,23 @@
 
         <div class="collapse" id="medicationInfo{{ patient.id }}">
             <div class="card card-block">
-                {% if patient.current_meds %}
+
             <ul class="meds">
                 {% for med in patient.current_meds %}
                 <li> Name: {{ med.med_name }}
 
                 <li class="{{ med.med_id }}"> Refills Remaining <span id="remaining-{{ med.med_id }}"> {{ med.refills }} </span> </li>
                     {% if med.refills < 2 %}
-                    <button class="renewButton" id="renew-{{ med.med_id }}"> renew options for this Rx </button>
+                    <button class="btn btn-primary renewButton" id="renew-{{ med.med_id }}" data-toggle="modal" data-target="#renewModal" data-id="{{ med.med_id}}"> renew options for this Rx </button>
                     {% endif %}
 
                     {% if med.refills > 0 %}
-                    <button class="refillButton" id="refill-{{ med.med_id }}"> refill this Rx </button>
+                    <button class="btn btn-primary refillButton" id="refill-{{ med.med_id }}"> refill this Rx </button>
                     {% endif %}
 
                 </li>
                 {% endfor %}
             <ul>
-                {% else %}
-                <p> No current meds for this patient </p>
                 {% endif %}
             </div>
         </div>
@@ -42,7 +41,15 @@
     {% endfor %}
 
     </div>
+<!-- modal with form for renewing -->
 
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="renewModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
 
 
 </div>
@@ -64,21 +71,33 @@
                 $("#refill-"+refill_selected).remove();
             }
         })
-    })
-    $('.renewButton').on('click', function () {
-        console.log($(this).attr('id'));
-        renew_selected = $(this).attr('id').substring(6);
+    });
+
+    // query for form to submit renewal
+    $('#renewModal').on('show.bs.modal', function (event) {
+          var button = $(event.relatedTarget) // Button that triggered the modal
+          var med_id = button.data('id') // Extract med_id info from data-id attributes
+          // AJAX to get form
+          $.get('/medications/process_renewal/', {"med_id": med_id}, function(result) {
+              console.log(result);
+              $(".modal-content").html(result);
+          })
+    });
+
+
+    $("#renewModal").on('submit', "#renewForm", function(evt) {
+        console.log('submit');
+        evt.preventDefault();
+        var data = $('form#renewForm').serialize();
+        $.post('/medications/process_renewal/', data, function (response) {
+            console.log(response);
+            $("#renewModal").modal('hide');
+        });
+    });
+
+    $("#renewModal").on('click', "#cancel", function () {
+        console.log("cancel");
+        $("#renewModal").modal('hide');
     })
 </script>
-<!-- <script>
-$('.medButton').on('click', function () {
-    var patientId = $('.collapse').attr('id').substring(14);
-    console.log(patientId);
-
-  $.get('/medications/patient_detail/', {'patient_id': patientId}, function(result) {
-      console.log(result);
-  })
-})
-
-</script> -->
 {% endblock %}

@@ -1,8 +1,4 @@
-.card-columns {
-  @include media-breakpoint-only(lg) {
-    column-count: 4;
-  }
-  @include media-breakpoint-only(xl) {
-    column-count: 5;
-  }
+body {
+    background: url("http://subtlepatterns2015.subtlepatterns.netdna-cdn.com/patterns/cork-wallet.png");
+    font-family: 'Roboto', sans-serif;
 }

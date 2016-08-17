@@ -1,5 +1,6 @@
 from django import forms
-CHOICES = (("approve", "approve refill"), ("contact", "contact patient"))
+CHOICES = (("approve", "approve renewal"), ("contact", "contact patient"))
 
-class RefillForm(forms.Form):
+class RenewalForm(forms.Form):
     action = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
+    med_id = forms.CharField(widget=forms.widgets.HiddenInput())

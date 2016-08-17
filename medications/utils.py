@@ -3,16 +3,16 @@ from models import Doctors, Patients, Medications
 
 import api
 
-def get_doctor(code):
+def get_doctor(tokens):
     """
     input - auth code.
     Checks if doctor is in our db. if not, adds to db
     Return - doctor object from db
     """
-    tokens = api.get_tokens(code)
+    # check if we know this doctor
+    #TODO: this would be better to store a cookie or something w/username when first authorize so don't need to use API call each time.
 
     current_doc_info = api.get_doctor_info(tokens['access_token'])
-
     # try finding doc already logged-in and update tokens with token refresh call.
     try:
         doc = Doctors.objects.get(doc_id=current_doc_info['id'])
@@ -29,7 +29,7 @@ def get_doctor(code):
         refresh_token = tokens['refresh_token'],
         expiration = tokens['expires_timestamp'])
 
-    doc.save()
+        doc.save()
 
     # return doc object
     return doc
@@ -59,7 +59,7 @@ def get_medications(patient_list, access_token):
     ex. {"123": "name": Joe Schmoe, "curr_meds": [{med_name: humira, refills: 3}, {med_name: oxycodone, refills: 0}]}
     """
     patient_med_info =[]
-    # API request for medications for each patient
+    # API request for medications for each patient. Ideally this would be done in background when doc authorizes app so that you can spread out the API requests.
 
     for patient in patient_list:
         p_id = patient['id']
@@ -67,27 +67,27 @@ def get_medications(patient_list, access_token):
         p_first_name = patient['first_name']
         p_last_name = patient['last_name']
         current_meds = api.api_get_medications(p_id, access_token)
-
         med_temp = []
         for med in current_meds:
-            try:
-                # get the listing in our db first, if present as it will have up to date refills
-                try_med_obj = Medications.objects.filter(patient_id=patient_obj,name=med['name'])
-                med_obj = try_med_obj[0]
-            except Exception as e:
-                if med.get("status", "ok") != "inactive":
-                    # add new medication to db.
-                    number_refills = med.get("number_refills", 0)
-                    if number_refills == None:
-                        number_refills = 0
+            if med.get("status", "ok") != "inactive":
+                try:
+                    # get the listing in our db first, if present as it will have up to date refills
+                    try_med_obj = Medications.objects.filter(patient_id=patient_obj, name=med['name'])
+                    med_obj = try_med_obj[0]
+                except Exception as e:
 
-                    med_obj = Medications(name=med['name'],
-                    patient_id=patient_obj, number_refills=number_refills)
-                    med_obj.save()
+                        # add new medication to db.
+                        number_refills = med.get("number_refills", 0)
+                        if number_refills == None:
+                            number_refills = 0
 
-            med_name = med_obj.name
-            refills = med_obj.number_refills
-            med_temp.append({"med_id": med_obj.id, "med_name": med_name, "refills": refills})
+                        med_obj = Medications(name=med['name'],
+                        patient_id=patient_obj, number_refills=number_refills)
+                        med_obj.save()
+
+                med_name = med_obj.name
+                refills = med_obj.number_refills
+                med_temp.append({"med_id": med_obj.id, "med_name": med_name, "refills": refills})
 
         # build patient entry in full med_info
         patient_med_info.append({"id": p_id, "name": p_first_name + " " + p_last_name, "current_meds": med_temp})

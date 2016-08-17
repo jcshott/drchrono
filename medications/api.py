@@ -65,13 +65,12 @@ def api_get_medications(patient_id, token):
     """
 
     headers = { 'Authorization': "Bearer " + token,}
-
+    params = {'patient': patient_id}
     medications = []
-    medications_url = 'https://drchrono.com/api/medications'
-    while medications_url:
-        data = requests.get(medications_url, headers=headers).json()
-        medications.extend(data['results'])
-        medications_url = data['next'] # A JSON null on the last page
+    medications_url = 'https://drchrono.com/api/medications?patient=' + str(patient_id)
+    # print "med_url", medications_url
+    data = requests.get(medications_url, headers=headers).json()
+    medications.extend(data['results'])
     return medications
 
 def refresh_token(user):
@@ -94,4 +93,13 @@ def refresh_token(user):
     # TODO: UPDATE these in your database associated with the user
     access_token = data['access_token']
     refresh_token = data['refresh_token']
-    expires_timestamp = datetime.datetime.now(pytz.utc) + datetime.timedelta(seconds=data['expires_in'])
+    expires_timestamp = timezone.now() + datetime.timedelta(seconds=data['expires_in'])
+
+
+def api_test(token):
+    headers = { 'Authorization': "Bearer " + token,}
+
+    patients_url = 'https://drchrono.com/api/patients'
+
+    data = requests.get(patients_url, headers=headers).json()
+    print data['results']

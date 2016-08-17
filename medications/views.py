@@ -8,12 +8,12 @@ from django.core.mail import send_mail
 import api, utils
 import os, datetime, requests, json
 from models import Doctors, Patients, Medications
-from forms import RefillForm
+from forms import RenewalForm
 
 # Create your views here.
 def index(request):
     user = request.session.get("user", None)
-    print user
+
     if user:
         return redirect("patients/")
 
@@ -36,8 +36,9 @@ def authorize(request):
     if not code:
         return redirect("medications")
 
+    tokens = api.get_tokens(code)
     # get doctor id
-    doc = utils.get_doctor(code)
+    doc = utils.get_doctor(tokens)
     request.session['user'] = doc.doc_id
     # redirect to patient listing page
     return redirect("patients/")
@@ -47,14 +48,13 @@ def patients(request):
     """
     View for patient list to access medications
     """
-    doc = Doctors.objects.get(doc_id=request.session.get("user"))
 
+    doc = Doctors.objects.get(doc_id=request.session.get("user"))
     patients = api.get_patients(doc)
     utils.check_new_patients(patients, doc)
 
     # patient meds is {"patient_id": {"id": patient_id, "name": patient_name, "curr_meds": [{"med_id": id_in_my_db, "med_name": name, "refills": number_refills_left}]}}
     patient_meds = utils.get_medications(patients, doc.access_token)
-
     return render(request, "medications/patients.html", {'patient_info': patient_meds})
 
 
@@ -67,17 +67,27 @@ def process_refill(request):
 
     return HttpResponse(medication_obj.number_refills)
 
-def patient_detail(request):
-    """
-    given a patient_id, returns medication information
-    """
-    patient_id = request.GET.get('patientId')
-    # TODO: get patient medication information to list.
-    # TODO: render refill option for each medication. maybe as modal?
-    return HttpResponse("here's some details")
+def process_renewal(request):
+    if request.method == "POST":
+        selection = request.POST.get('selection')
+        print selection
+        med_id = request.POST.get('med_id')
+        print med_id
+        return HttpResponse("thanks")
+    else:
+        med_id = int(request.GET.get('med_id'))
+        form = RenewalForm()
+        form.fields['med_id'].initial = med_id
+        return render(request, 'medications/renewal.html', {'form': form})
+
 
 def send_email(request):
     """
     handles sending email to patient notifiying need to make appt for meds
     """
     pass
+
+
+def test_api(request):
+    doc = Doctors.objects.get(doc_id=request.session.get("user"))
+    api.api_test(doc.access_token)
