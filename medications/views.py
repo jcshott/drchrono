@@ -33,7 +33,7 @@ def authorize(request):
 
     # TODO: notify user that they need to authorize.
     if not code:
-        return redirect("medications/")
+        return redirect("medications")
 
     # get doctor id
     doc_id = api.get_tokens(code)

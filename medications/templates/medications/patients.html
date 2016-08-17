@@ -5,10 +5,10 @@
     <h2> DOC ID: </h2>
 
     <h2> Current Patients for Dr. So-and-So </h2>
-<div class="card-columns">
+<!-- <div class="card-columns"> -->
         {% for patient in patients %}
-        <div class="card">
-          <div class="card-block">
+        <div class="card-block">
+            <div class="card" style="max-width: 20rem;">
             <h4 class="card-title">{{ patient.first_name }} {{ patient.last_name }}</h4>
             <p class="card-text">Some text about patient </p>
 
@@ -22,7 +22,7 @@
                 </div>
             </div>
           </div>
-        </div>
+      </div>
         {% endfor %}
   <!-- </div> -->
 </div>
@@ -33,7 +33,7 @@
 $('.medButton').on('click', function () {
     var patientId = $('.collapse').attr('id').substring(14);
     console.log(patientId);
-    
+
   $.get('/medications/patient_detail/', {'patient_id': patientId}, function(result) {
       console.log(result);
   })
