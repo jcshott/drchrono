@@ -83,7 +83,12 @@
               $(".modal-content").html(result);
           })
     });
-
+    $("#renewModal").on('change', "#id_action_0", function () {
+        $("#id_renew_amt").attr("type", "text");
+    })
+    $("#renewModal").on('change', "#id_action_1", function () {
+        $("#id_renew_amt").attr("type", "hidden");
+    })
 
     $("#renewModal").on('submit', "#renewForm", function(evt) {
         console.log('submit');
