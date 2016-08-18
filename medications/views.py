@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.utils import timezone
-from django.core.mail import send_mail
+from django.contrib import messages
 
+from django.contrib.sessions.models import Session
 
 
 import api, utils
@@ -12,12 +13,14 @@ from forms import RenewalForm
 
 # Create your views here.
 def index(request):
+
     user = request.session.get("user", None)
 
     if user:
         return redirect("patients/")
 
     else:
+
         params = {"redirect": "http%3A//127.0.0.1%3A8000/medications/authorize",
                 "client_id": os.environ["DRCHRONO_MEDS_CLIENT_ID"],
                 "scope": "user:read patients:read patients:write calendar:read calendar:write clinical:read clinical:write"}
@@ -32,9 +35,14 @@ def authorize(request):
     # redirect with the authorization codes from drchrono
     code = request.GET.get("code", "")
 
-    # TODO: notify user that they need to authorize.
     if not code:
-        return redirect("medications")
+        messages.error(request, 'Please Authorize this Application with drchrono.')
+
+        params = {"redirect": "http%3A//127.0.0.1%3A8000/medications/authorize",
+                "client_id": os.environ["DRCHRONO_MEDS_CLIENT_ID"],
+                "scope": "user:read patients:read patients:write calendar:read calendar:write clinical:read clinical:write"}
+
+        return render(request, "medications/index.html", params)
 
     tokens = api.get_tokens(code)
     # get doctor id
@@ -59,20 +67,30 @@ def patients(request):
 
 
 def process_refill(request):
-
-    med_id = int(request.POST.get('med_id'))
+    print request.POST
+    med_id = int(request.POST.getlist('med_id')[0])
     medication_obj = Medications.objects.get(pk=med_id)
-    medication_obj.number_refills = medication_obj.number_refills - 1
-    medication_obj.save()
+    medication_obj.update_refill_amt(-1)
+    # medication_obj.save()
 
     return HttpResponse(medication_obj.number_refills)
 
 def process_renewal(request):
     if request.method == "POST":
-        selection = request.POST.get('selection')
-        print selection
+        # returns a list of the selected action.
+        selection = request.POST.getlist('action')[0]
+        # print request.POST
+        #utils.send_appt_email()
         med_id = request.POST.get('med_id')
-        print med_id
+        if selection == "approve":
+            # process autorenewal
+            renew_amt = request.POST.getlist('renew_amt')[0]
+            # # update db to reflect renewal
+            medication_obj = Medications.objects.get(pk=med_id)
+            medication_obj.update_refill_amt(int(renew_amt))
+            # medication_obj.save()
+        else:
+            utils.send_appt_email()
         return HttpResponse("thanks")
     else:
         med_id = int(request.GET.get('med_id'))
@@ -81,12 +99,9 @@ def process_renewal(request):
         return render(request, 'medications/renewal.html', {'form': form})
 
 
-def send_email(request):
-    """
-    handles sending email to patient notifiying need to make appt for meds
-    """
-    pass
+def make_appointment(request):
 
+    return HttpResponse("here you'd be able to make an appointment")
 
 def test_api(request):
     doc = Doctors.objects.get(doc_id=request.session.get("user"))

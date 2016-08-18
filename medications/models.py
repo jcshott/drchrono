@@ -22,3 +22,7 @@ class Medications(models.Model):
     name = models.CharField(max_length=100)
     patient_id = models.ForeignKey(Patients, on_delete=models.CASCADE)
     number_refills = models.IntegerField()
+
+    def update_refill_amt(self, change_amt):
+        self.number_refills += change_amt
+        self.save()

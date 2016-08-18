@@ -4,9 +4,13 @@
 <div> <h1 class="lead"> Manage Patient Medication Refills </h1></div>
 
 <div>
-    <p> Here's a great description </p>
+    <p> Connect with drchrono to view, refill, or renew  active prescriptions for your patients </p>
 </div>
-
+{% if messages %}
+<div class="alert alert-danger" role="alert">
+  <strong>Oh snap!</strong> You need to authorize this application with drchrono before proceeding.
+</div>
+{% endif %}
 <div>
     <a href="https://drchrono.com/o/authorize?redirect_uri={{redirect}}&client_id={{ client_id }}&scope={{ scope }}&response_type=code">
         <button class="btn btn-primary btn-lg"> Log-in with to drchrono to get started! </button>

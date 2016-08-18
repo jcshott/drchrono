@@ -27,7 +27,13 @@
                     {% endif %}
 
                     {% if med.refills > 0 %}
-                    <button class="btn btn-primary refillButton" id="refill-{{ med.med_id }}"> refill this Rx </button>
+                    <form action="" method="post" id="refillForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="med_id" id="refill-{{ med.med_id }}" value="{{ med.med_id }}"></input>
+                        <input type="submit" value="Refill this Rx" class="refillButton" id="button-{{ med.med_id }}"/>
+                    </form>
+
+                    <!-- <button class="btn btn-primary refillButton" id="refill-{{ med.med_id }}"> refill this Rx </button> -->
                     {% endif %}
 
                 </li>
@@ -54,55 +60,4 @@
 
 </div>
 
-<script>
-    $('.refillButton').on('click', function () {
-        console.log($(this).attr('id'));
-        var refill_selected = $(this).attr('id').substring(7);
-        $.post('/medications/process_refill/', {"csrfmiddlewaretoken": "{{ csrf_token }}", "med_id": refill_selected}, function(response){
-            console.log(response);
-            if (response < 2 && $("#remaining-"+refill_selected).text() > 1) {
-                $("."+refill_selected).append(
-                    "<button class='renewButton' id='renew-{{ med.med_id }}'> renew options for this Rx </button>"
-                );
-            }
-            $(this).text('Refilled');
-            $("#remaining-"+refill_selected).text(response);
-            if(response < 1) {
-                $("#refill-"+refill_selected).remove();
-            }
-        })
-    });
-
-    // query for form to submit renewal
-    $('#renewModal').on('show.bs.modal', function (event) {
-          var button = $(event.relatedTarget) // Button that triggered the modal
-          var med_id = button.data('id') // Extract med_id info from data-id attributes
-          // AJAX to get form
-          $.get('/medications/process_renewal/', {"med_id": med_id}, function(result) {
-              console.log(result);
-              $(".modal-content").html(result);
-          })
-    });
-    $("#renewModal").on('change', "#id_action_0", function () {
-        $("#id_renew_amt").attr("type", "text");
-    })
-    $("#renewModal").on('change', "#id_action_1", function () {
-        $("#id_renew_amt").attr("type", "hidden");
-    })
-
-    $("#renewModal").on('submit', "#renewForm", function(evt) {
-        console.log('submit');
-        evt.preventDefault();
-        var data = $('form#renewForm').serialize();
-        $.post('/medications/process_renewal/', data, function (response) {
-            console.log(response);
-            $("#renewModal").modal('hide');
-        });
-    });
-
-    $("#renewModal").on('click', "#cancel", function () {
-        console.log("cancel");
-        $("#renewModal").modal('hide');
-    })
-</script>
 {% endblock %}
