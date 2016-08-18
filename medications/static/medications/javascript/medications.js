@@ -29,6 +29,7 @@ $('#renewModal').on('show.bs.modal', function (event) {
       var med_id = button.data('id') // Extract med_id info from data-id attributes
       // AJAX to get form
       $.get('/medications/process_renewal/', {"med_id": med_id}, function(result) {
+          console.log(result);
           $(".modal-content").html(result);
       })
 });

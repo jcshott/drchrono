@@ -1,56 +1,74 @@
 {% extends "medications/base.html" %}
 
 {% block content %}
-<div>
-    <h2> Current Patients with Prescriptions </h2>
-    {% for patient in patient_info %}
-    {% if patient.current_meds %}
-    <div class="card-block" style="width: 22rem;">
-        <div class="card">
-        <h4 class="card-title text-xs-center">{{ patient.name }}</h4>
-        <p class="card-text">Some text about patient </p>
 
-        <button class="btn btn-primary medButton" type="button" data-toggle="collapse" data-target="#medicationInfo{{ patient.id }}" aria-expanded="false" aria-controls="collapseExample">
-          Click for Medication Options
-        </button>
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <h1 class="display-3">Current prescriptions on file</h1>
+        <p class="lead">Refill or renew prescriptions for patients here.</p>
+    </div>
+</div>
 
-        <div class="collapse" id="medicationInfo{{ patient.id }}">
-            <div class="card card-block">
+<div class="row">
 
-            <ul class="meds">
-                {% for med in patient.current_meds %}
-                <li> Name: {{ med.med_name }}
+        <div class="card-columns col-md-12">
 
-                <li class="{{ med.med_id }}"> Refills Remaining <span id="remaining-{{ med.med_id }}"> {{ med.refills }} </span> </li>
-                    {% if med.refills < 2 %}
-                    <button class="btn btn-primary renewButton" id="renew-{{ med.med_id }}" data-toggle="modal" data-target="#renewModal" data-id="{{ med.med_id}}"> renew options for this Rx </button>
-                    {% endif %}
+        {% for patient in patient_info %}
+        {% if patient.current_meds %}
 
-                    {% if med.refills > 0 %}
-                    <form action="" method="post" id="refillForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="med_id" id="refill-{{ med.med_id }}" value="{{ med.med_id }}"></input>
-                        <input type="submit" value="Refill this Rx" class="refillButton" id="button-{{ med.med_id }}"/>
-                    </form>
+            <div class="card">
+                <div class="card-block">
+                    <h4 class="card-title"> {{ patient.name }} </h4>
+                    <p class="card-text"> Some text about patient </p>
 
-                    <!-- <button class="btn btn-primary refillButton" id="refill-{{ med.med_id }}"> refill this Rx </button> -->
-                    {% endif %}
+                    <button class="medButton" type="button" data-toggle="collapse" data-target="#medicationInfo{{ patient.id }}" aria-expanded="false" aria-controls="collapseExample">
+                      Click for Medication Options
+                    </button>
 
-                    <div class="alert alert-danger" role="alert" hidden=true>
-                      <strong>No email on file for patient, please contact via other means</strong>
+                    <div class="collapse card-block" id="medicationInfo{{ patient.id }}">
+                        <ul class="meds list-group">
+                            {% for med in patient.current_meds %}
+
+                            <li class="{{ med.med_id }} list-group-item">
+                                <strong>Medication:</strong> {{ med.med_name }}
+                                <br>
+                                <strong>Refills Remaining: </strong> <span id="remaining-{{ med.med_id }}"> {{ med.refills }} </span>
+
+                                 <br>
+
+                                 {% if med.refills < 2 %}
+                                 <button class="renewButton" id="renew-{{ med.med_id }}" data-toggle="modal" data-target="#renewModal" data-id="{{ med.med_id}}"> renew options for this Rx </button>
+                                 {% endif %}
+
+                                 {% if med.refills > 0 %}
+                                 <form action="" method="post" id="refillForm">
+                                     {% csrf_token %}
+                                     <input type="hidden" name="med_id" id="refill-{{ med.med_id }}" value="{{ med.med_id }}"></input>
+                                     <input type="submit" value="Refill this Rx" class="refillButton" id="button-{{ med.med_id }}"/>
+                                 </form>
+
+                                 {% endif %}
+
+                             </li>
+                             <br>
+
+                                <div class="alert alert-danger" role="alert" hidden=true>
+                                  <strong>No email on file for patient, please contact via other means</strong>
+                                </div>
+
+                            {% endfor %}
+                        <ul>
+
                     </div>
 
-                </li>
-                {% endfor %}
-            <ul>
-                {% endif %}
+                </div>
             </div>
+            {% endif %}
+            {% endfor %}
         </div>
-      </div>
-    </div>
-    {% endfor %}
 
-    </div>
+</div>
+
 <!-- modal with form for renewing -->
 
 <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="renewModal">
@@ -62,6 +80,5 @@
 </div>
 
 
-</div>
 
 {% endblock %}

@@ -1,6 +1,19 @@
 <form action="" method="post" id="renewForm">
     {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit" id="renewButton"/>
+    <fieldset class="form-group">
+        <legend> Renewal options </legend>
+        {% for field in form.action %}
+            <div class="radio">
+                {{ field }}
+            </div>
+            {% endfor %}
+
+              {{ form.renew_amt }}
+
+        {{ form.med_id }}
+    </fieldset>
+    <div class="form-check">
+        <input class="btn btn-primary" type="submit" value="Submit" id="renewButton"/>
+    </div>
+    <button class="btn btn-primary" id='cancel'> Cancel </button>
 </form>
-<button id='cancel'> Cancel </button>

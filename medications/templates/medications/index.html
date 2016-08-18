@@ -1,19 +1,21 @@
 {% extends "medications/base.html" %}
 
 {% block content %}
-<div> <h1 class="lead"> Manage Patient Medication Refills </h1></div>
+<div class="jumbotron">
+  <h1 class="display-3">Manage Medication Refills </h1>
+  <p class="lead">Utilize the power of drchrono to manage Rx refills</p>
+  <hr class="m-y-2">
+  <p>Connect with <a href="https://www.drchrono.com" target="new">drchrono</a> to view, refill, or renew  active prescriptions for your patients.</p>
+  <p class="lead">
+      <a href="https://drchrono.com/o/authorize?redirect_uri={{redirect}}&client_id={{ client_id }}&scope={{ scope }}&response_type=code">
+          <button class="connect"> Log-in with to drchrono to get started! </button>
+      </a>
+  </p>
 
-<div>
-    <p> Connect with drchrono to view, refill, or renew  active prescriptions for your patients </p>
-</div>
 {% if messages %}
 <div class="alert alert-danger" role="alert">
   <strong>Oh snap!</strong> You need to authorize this application with drchrono before proceeding.
 </div>
 {% endif %}
-<div>
-    <a href="https://drchrono.com/o/authorize?redirect_uri={{redirect}}&client_id={{ client_id }}&scope={{ scope }}&response_type=code">
-        <button class="btn btn-primary btn-lg"> Log-in with to drchrono to get started! </button>
-    </a>
-</div>
+
 {% endblock %}

@@ -1,4 +1,48 @@
 body {
-    background: url("http://subtlepatterns2015.subtlepatterns.netdna-cdn.com/patterns/cork-wallet.png");
+    background-color: #eceeef;
     font-family: 'Roboto', sans-serif;
+}
+
+#renewForm {
+    padding-left: 10px;
+}
+
+.card-columns {
+    padding-left: 20px;
+    margin-left: 150px;
+}
+
+div.card-block {
+    background: #707A7F;
+    color: #C9E5E0;
+
+}
+.list-group-item {
+    color: black;
+}
+.medButton {
+    background-color: #38403E;
+    border-color: #38403E;
+    color: white;
+}
+
+.renewButton {
+    margin-top: 10px;
+    color: white;
+    background-color: #38403E;
+    border-color: #38403E;
+}
+
+.refillButton {
+    margin-top: 10px;
+    color: white;
+    background-color: #497F74;
+    border-color: #497F74;
+
+}
+
+.connect {
+    color: white;
+    background-color: #707A7F;
+    border-color: #707A7F;
 }

@@ -97,8 +97,8 @@ def process_renewal(request):
             # handle no email address. probably send error to DOM
             else:
 
-                # utils.send_appt_email(email='jcshott@gmail.com', first=patient.first_name, last=patient.last_name, medication=medication_obj.name)
-                return HttpResponse("no email")
+                utils.send_appt_email(email='jcshott@gmail.com', first=patient.first_name, last=patient.last_name, medication=medication_obj.name)
+                # return HttpResponse("no email")
         return HttpResponse("thanks")
     else:
         med_id = int(request.GET.get('med_id'))
