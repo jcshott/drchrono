@@ -1,11 +1,11 @@
 {% extends "mail_templated/base.tpl" %}
 
 {% block subject %}
-A message from your doctor regarding a prescription
+A message for {{ user.first_name }} {{ user.last_name }} from your doctor regarding a prescription
 {% endblock %}
 
 {% block body %}
-{{ user.name }}, you have a prescription due for renewal but we need to see you for an appointment before approving.
+{{ user.first_name }}, you have a prescription due for renewal but we need to see you for an appointment before approving.
 
 Please contact the office at 555-555-5555 to schedule an appointment.
 {% endblock %}

@@ -16,12 +16,10 @@ $('.refillButton').on('click', function (evt) {
                 "<button class='renewButton' id='renew-{{ med.med_id }}'> renew options for this Rx </button>"
             );
         }
-        // $(this).text('Refilled');
+
         $("#remaining-"+refillSelected).text(response);
         $("#button-"+refillSelected).remove();
-        // if(response < 1) {
-        //     $("#refill-"+refill_selected).remove();
-        // }
+
     });
 });
 
@@ -34,12 +32,6 @@ $('#renewModal').on('show.bs.modal', function (event) {
           $(".modal-content").html(result);
       })
 });
-// $("#renewModal").on('change', "#id_action_0", function () {
-//     $("#id_renew_amt").attr("type", "number");
-// })
-// $("#renewModal").on('change', "#id_action_1", function () {
-//     $("#id_renew_amt").attr("type", "hidden");
-// })
 
 // process renewal
 $("#renewModal").on('submit', "#renewForm", function(evt) {
@@ -48,6 +40,10 @@ $("#renewModal").on('submit', "#renewForm", function(evt) {
     $.post('/medications/process_renewal/', data, function (response) {
         console.log(response);
         $("#renewModal").modal('hide');
+        if (response == "no email") {
+            $(".alert").attr("hidden", false);
+        }
+
     });
 });
 

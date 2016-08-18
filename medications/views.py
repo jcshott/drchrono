@@ -82,15 +82,23 @@ def process_renewal(request):
         # print request.POST
         #utils.send_appt_email()
         med_id = request.POST.get('med_id')
+        medication_obj = Medications.objects.get(pk=med_id)
         if selection == "approve":
             # process autorenewal
             renew_amt = request.POST.getlist('renew_amt')[0]
             # # update db to reflect renewal
-            medication_obj = Medications.objects.get(pk=med_id)
             medication_obj.update_refill_amt(int(renew_amt))
-            # medication_obj.save()
+
         else:
-            utils.send_appt_email()
+            patient_id = medication_obj.patient_id_id
+            patient = Patients.objects.get(pk=patient_id)
+            if patient.email:
+                utils.send_appt_email(email=patient.email, first=patient.first_name, last=patient.last_name, medication=medication_obj.name)
+            # handle no email address. probably send error to DOM
+            else:
+
+                # utils.send_appt_email(email='jcshott@gmail.com', first=patient.first_name, last=patient.last_name, medication=medication_obj.name)
+                return HttpResponse("no email")
         return HttpResponse("thanks")
     else:
         med_id = int(request.GET.get('med_id'))

@@ -36,6 +36,10 @@
                     <!-- <button class="btn btn-primary refillButton" id="refill-{{ med.med_id }}"> refill this Rx </button> -->
                     {% endif %}
 
+                    <div class="alert alert-danger" role="alert" hidden=true>
+                      <strong>No email on file for patient, please contact via other means</strong>
+                    </div>
+
                 </li>
                 {% endfor %}
             <ul>

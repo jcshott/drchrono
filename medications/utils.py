@@ -98,16 +98,9 @@ def get_medications(patient_list, access_token):
     return patient_med_info
 
 
-def send_appt_email():
+def send_appt_email(email, first, last, medication):
     """
     handles sending email to patient notifiying need to make appt for meds
     """
-
-    send_mail('email/refill_appt_email.tpl', {'user': {'name': "corey", "medication": "test"}}, "jcshott@gmail.com", ["jcshott@gmail.com"])
-
-    # msg_plain = render_to_string('templates/email.txt', {'some_params': some_params})
-    # msg_html = render_to_string('templates/email.html', {'some_params': some_params})
-    #
-    # send_mail( 'email title', msg_plain, 'some@sender.com', ['some@receiver.com'], html_message=msg_html, )
-
-    # return HttpResponse('email sent')
+    # send_mail('email/hello.tpl', {'user': user}, from_email, [user.email])
+    send_mail('email/refill_appt_email.tpl', {'user': {'first_name': first, 'last_name': last, "medication": medication}}, "jcshott@gmail.com", [email])
