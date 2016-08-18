@@ -73,12 +73,12 @@ def api_get_medications(patient_id, token):
     medications.extend(data['results'])
     return medications
 
-def refresh_token(user):
+def refresh_token(refresh_token):
     """
     Refresh API tokens
     """
     # TODO: refresh token get.
-    refresh_token = user.get_refresh()
+
     params = {
     'refresh_token': refresh_token,
     'grant_type': 'refresh_token',
@@ -89,11 +89,8 @@ def refresh_token(user):
     response = requests.post('https://drchrono.com/o/token/', data=params)
     response.raise_for_status()
     data = response.json()
+    return data
 
-    # TODO: UPDATE these in your database associated with the user
-    access_token = data['access_token']
-    refresh_token = data['refresh_token']
-    expires_timestamp = timezone.now() + datetime.timedelta(seconds=data['expires_in'])
 
 
 def api_test(token):

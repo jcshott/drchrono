@@ -20,9 +20,13 @@ def get_doctor(tokens):
     try:
         doc = Doctors.objects.get(doc_id=current_doc_info['id'])
         # TODO: REFRESH token if needed
-        # doc.access_token = access_token = tokens['access_token']
-        # doc.refresh_token = tokens['refresh_token']
-        # doc.expiration = timezone.now() + datetime.timedelta(seconds=tokens['expires_in'])
+        if timezone.now() <= doc.expiration:
+            data = api.refresh_token(doc.refresh_token)
+
+            doc.access_token = data['access_token']
+            doc.refresh_token = data['refresh_token']
+            doc.expires_timestamp = timezone.now() + datetime.timedelta(seconds=data['expires_in'])
+            doc.save()
 
     except Exception:
         # if new doc - save in DB
